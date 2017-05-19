@@ -4,6 +4,7 @@
 * look badman
 * no confuse
 
+Fuck decimals and that.
 Based on being first awed and then pissed off by [comfortable-motion.vim](https://github.com/yuttie/comfortable-motion.vim), in turn inspired by [emacs-inertial-scroll](https://github.com/kiwanami/emacs-inertial-scroll).
 
 Scroll as normal with `C-d`/`C-u` or `C-f`/`C-b`:
@@ -23,7 +24,7 @@ Plug 'tolgraven/proper-smooth.vim'
 etc.
 
 ## Mappings
-These skip ahead for any consequent keypresses instead of throwing yet more ticks on an existing queue, so you're never more than one "cycle" away.
+These skip ahead for any consequent presses instead of throwing yet more ticks on an existing queue, so you're never more than one "cycle" away.
 By default:
 ```vim
 nnoremap <silent> <C-d> :call proper_smooth#go(0.5)<CR>
@@ -44,7 +45,8 @@ let g:proper_smooth_steps 	 = 10 		"how many jumps to get there?
 
 ## Self-promotion:
 Stand by for [Bruvbox](https://github.com/tolgraven/bruvbox)
-"Bruvbox - there's nothing Gruvy about it"
+<!-- "Bruvbox - there's nothing Gruvy about it" -->
+"Bruvbox - I want my money back"
 <mindblowing image goes here>
 ...any day now
 
