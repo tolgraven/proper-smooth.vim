@@ -47,7 +47,7 @@ let g:proper_smooth_steps 	 = 10 		"how many jumps to get there?
 Stand by for [Bruvbox](https://github.com/tolgraven/bruvbox)
 <!-- "Bruvbox - there's nothing Gruvy about it" -->
 "Bruvbox - I want my money back"
-<mindblowing image goes here>
+<angry image goes here>
 ...any day now
 
 ## License
