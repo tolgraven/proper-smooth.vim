@@ -4,76 +4,71 @@
 " Created: 2017-04-27
 "=============================================================================
 scriptencoding utf-8
-if !exists('g:loaded_proper_smooth') | finish | endif | let g:loaded_proper_smooth=1
+if !exists('g:loaded_proper_smooth') | 	finish | endif | let g:loaded_proper_smooth=1
 let s:save_cpo = &cpoptions | set cpoptions&vim
 
 " let s:proper_smooth_interval 				= get('g:', proper_smooth_interval, 10)
-let s:proper_smooth_interval 				= 10
+let s:proper_smooth_interval 				= 15
 " let s:proper_smooth_steps_baseline 	= get('g:', proper_smooth_steps_baseline, 10)
 let s:proper_smooth_steps_baseline 	= 10
-" let g:proper_smooth.ticks_to_decr 	= get('g:proper_smooth', air_drag, 2.0)
-" let s:ps = g:proper_smooth
+let s:state = { 'fuel': 0, 'velocity': 0, 'target': 0}
 
-let s:state = { 'fuel': 0, 'velocity': 0, 'target': 0, 'running': 0}
-
+" XXX: heed 'scroll' value would be good, if trying to really 1:1 mirror default
 
 function! s:tick(timer_id)
-  " let l:wait = s:ps.interval / 1000.0  " Unit conversion: ms -> s
-	" XXX	oh yeah so easiest way to fake some friction is I guess just incr the wait period between each tick so goes slower towards end?
-
-  " Compute resistance forces
-  " let l:vel_sign = s:state.velocity == 0 	? 0 : s:state.velocity / abs(s:state.velocity)
-  " let l:friction         = -l:vel_sign 				* s:ps.friction
-  " let l:air_drag         = -s:state.velocity 	* s:ps.air_drag
-  " let l:additional_force = 	l:friction 				+ l:air_drag
-  " Update state
-  " let s:state.delta 	 += s:state.velocity * l:wait
-  " let s:state.velocity += s:state.impulse + (abs(l:additional_force * l:wait) > abs(s:state.velocity) 
-	" \ 										? -s:state.velocity 	: l:additional_force * l:wait)
-
   let s:state.fuel 			-= s:state.velocity
 
-  " Scroll
   let l:int_delta 		= float2nr(s:state.velocity >= 0 ? floor(s:state.velocity) : ceil(s:state.velocity))
-  " let s:state.delta  -= l:int_delta
-  " if l:int_delta 			> 0
-  "   execute "normal! " . string(abs(l:int_delta)) . "\<C-e>"
-  " elseif l:int_delta 	< 0
-  "   execute "normal! " . string(abs(l:int_delta)) . "\<C-y>"
-	" endif
-	execute "normal! " . string(abs(l:int_delta)) . (l:int_delta > 0 ? "\<C-e>" : "\<C-y>")
-	execute "normal! " . string(abs(l:int_delta)) . (l:int_delta > 0 ? "j" : "k")
+	" XXX prob want to make sure not triggering autocmds here, cursormoved and whatnot...
+	" ie currently makes cursorword highlight trigger whole jumping etc, that'd
+	" prob murder a lesser machine
+	execute "noautocmd normal! " . string(abs(l:int_delta)) . (l:int_delta > 0 ? "\<C-e>" : "\<C-y>")
+	execute "noautocmd normal! " . string(abs(l:int_delta)) . (l:int_delta > 0 ? "j" : "k")
 
-	let s:state.velocity = s:state.velocity * 0.77
-	" set timer, if there's still enough momentum. else kill any residual.
+	let s:state.velocity = s:state.velocity * 0.66
+
+	" set timer if momentum. else kill any residual, hard jump to target so is foolproof
   if abs(s:state.velocity) >= 1
-    let l:interval = float2nr(round(s:proper_smooth_interval))
-    " let s:timer = timer_start(l:interval, function('s:tick'))
+    " let l:interval = float2nr(round(s:proper_smooth_interval))
+		let l:interval = s:proper_smooth_interval
+
+    let s:timer = timer_start(l:interval, function('s:tick'))
   else
-		let s:state.running = 0 | let s:state.velocity = 0 	| let s:state.impulse = 0
-		call line(s:state.target)
+		let s:state.velocity = 0 	| let s:state.fuel = 0
+		" call cursor(s:state.target, getpos('.')) | let s:state.target = 0
+		" execute "normal! " . s:state.target . "gg"
+		" avoid setting jump mark by using : instead of gg
+		execute 'normal! :' . s:state.target
+		let s:state.target = 0
   endif
 endfunction
 
 
-" function! proper_smooth#go(impulse)
 function! proper_smooth#go(screens)
-	if s:state.running == 1
-		call cursor(s:state.target)
+	if s:state.velocity != 0
 		call timer_stop(s:timer)
+		" call cursor(s:state.target)
+		" execute "normal! " . s:state.target . "gg"
+		execute 'normal! :' . s:state.target
+		let s:state.velocity = 0 | let s:state.fuel = 0
 	endif
-  let s:state.fuel 			= a:screens * winheight(0)  "total distance to move
+	let l:lastline = line('$') 	"current pos
+  let s:state.fuel 			= a:screens * winheight(0) "total distance to move
+	" XXX have to adapt target to heed wrapped lines(?) and def FOLDS
+	" use some line() expr i guess?
+	" also curr off by 1 it seems (<c-u> x 2 = 2 lines behind if jumping back after orig-mapped <c-f>)
+
+	let s:state.target 		= float2nr(round(line('.') + s:state.fuel))
+	if 		 s:state.target > l:lastline | let s:state.target = l:lastline
+	elseif s:state.target < 0 		 | let s:state.target = 0
+	endif
 	" let s:state.velocity 	= s:state.fuel / s:proper_smooth_steps_baseline
-	let s:state.velocity 	= float2nr(round(s:state.fuel / 4))
-	" play numbers, so lets say winheight 50, fuel 25 or 50...
-	"
-	" 40 / 80...
-	
-	"
-	let s:state.running 			=1
+	let s:state.velocity 	= float2nr(round(s:state.fuel / 4)) 	"initial speed
+	" let s:state.velocity 	= float2nr(round(s:state.fuel / 5)) 	"initial speed
 
   " Start a thread
   let s:timer = timer_start(0, function('s:tick'))
+	" echo s:state
 endfunction
 
 
