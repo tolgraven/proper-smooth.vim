@@ -11,7 +11,7 @@ Scroll as normal with `C-d`/`C-u` or `C-f`/`C-b`:
 <!-- ![Scroll with `C-d`/`C-u`]() -->
 
 ## how many CUDA nodes does this require???
-Go home, you 're drunk. Uses `<C-e>`/`<C-y>` parallel with `j`/`k`, so maybe don't `nmap` those.
+Go home, you're drunk. Uses `<C-e>`/`<C-y>` parallel with `j`/`k`, so maybe don't `nmap` those.
 
 ## Requirements
 Fuck you, just use nvim like a normal person. Or any vim version with timer support I guess, if you're old or something.
