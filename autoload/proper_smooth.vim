@@ -29,13 +29,15 @@ endfunction
 
 
 function! proper_smooth#go(screens)
-	call s:cleanup()
+  " if get(g:, "proper_smooth_disabled", 0) | return | endif
+	call s:cleanup()  "cancel (finish) current scroll so wont pile up. better if extends/makes courser tho?
 	let s:save_eventignore  = &eventignore		| set eventignore=all
 	let s:save_cursorline 	= &cursorline			| set nocursorline
 
 	let l:currline 			 = line('.') 					| let l:lastline       = line('$')
 	let s:interval       = s:proper_smooth_interval
-  let s:state.fuel     = float2nr(round(a:screens * winheight(0))) "total distance to move
+  " let s:state.fuel     = float2nr(round(a:screens * winheight(0))) "total distance to move
+  let s:state.fuel     = float2nr(round(2 * a:screens * &scroll)) "total distance to move
 	" XXX have to adapt target to heed wrapped lines(?) and def FOLDS.  use some line() expr i guess?
 	" also curr off by 1 it seems (<c-u> x 2 = 2 lines behind if jumping back after orig-mapped <c-f>)
 
